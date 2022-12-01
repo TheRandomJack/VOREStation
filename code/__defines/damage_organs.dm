@@ -48,6 +48,7 @@
 // Damage above this value must be repaired with surgery.
 #define ROBOLIMB_REPAIR_CAP 30
 
+#define ORGAN_GOOP	   -1 // RIESIG Edit - for gi88y species. Greater than 2 used to identify robotic
 #define ORGAN_FLESH    0 // Normal organic organs.
 #define ORGAN_ASSISTED 1 // Like pacemakers, not robotic
 #define ORGAN_ROBOT    2 // Fully robotic, no organic parts

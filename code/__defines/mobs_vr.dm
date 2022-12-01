@@ -43,3 +43,10 @@
 //custom species base sprites
 #define SPECIES_FENNEC				"Fennec"
 #define SPECIES_XENOHYBRID			"Xenohybrid"
+
+//RIESIG Edit
+#define SPECIES_VULPKANIN_GREATER	"Greater Vulpkanin"
+#define SPECIES_LATEX_GIBBY			"GI.88.Y"
+#define SPECIES_LATEX_HUMAN			"Living Latex"
+//define SPECIES_LATEX_BLACK		"Black Latex"
+//#define SPECIES_LATEX_WHITE		"White Latex"
