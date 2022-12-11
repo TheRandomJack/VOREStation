@@ -3,11 +3,12 @@
 	name = SPECIES_VULPKANIN_GREATER
 	name_plural = "Greater Vulpkanin"
 
-	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
+	spawn_flags = SPECIES_CAN_JOIN //| SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
 // /datum/species/shapeshifter/latex
 
-/datum/species/gi88y //wherever latex is
+//wherever latex is
+/datum/species/gi88y
 	name = SPECIES_LATEX_GIBBY
 	name_plural = "GI.88.Y"
 
@@ -50,7 +51,7 @@
 	pain_mod =		1		// Multiplier to pain effects; 0.5 = half, 0 = no effect (equal to NO_PAIN, really), 2 = double, etc.
 	trauma_mod = 	1		// Affects traumatic shock (how fast pain crit happens). 0 = no effect (immunity to pain crit), 2 = double etc.Overriden by "can_feel_pain" var
 	// EMP stuff
-	emp_sensitivity =		EMP_PAIN | EMP_STUN | EMP_BRUTE_DMG			// bitflag. valid flags are: EMP_PAIN, EMP_BLIND, EMP_DEAFEN, EMP_CONFUSE, EMP_STUN, and EMP_(BRUTE/BURN/TOX/OXY)_DMG
+	emp_sensitivity =	1				// bitflag. valid flags are: EMP_PAIN, EMP_BLIND, EMP_DEAFEN, EMP_CONFUSE, EMP_STUN, and EMP_(BRUTE/BURN/TOX/OXY)_DMG
 	emp_dmg_mod =		0.1			// Multiplier to all EMP damage sustained by the mob, if it's EMP-sensitive
 	emp_stun_mod = 		1			// Multiplier to all EMP disorient/etc. sustained by the mob, if it's EMP-sensitive
 
@@ -120,16 +121,16 @@
 
 	darksight = 10		// Native darksight distance. Set Gibby to not be able to have darksight trait, and other anti-darksight traits should be investigated
 
-	flags =            NO_SCAN | NO_SLIP | NO_MINOR_CUT | NO_HALLUCINATION | NO_INFECT | NO_PAIN
+	flags =            NO_SCAN | NO_SLIP | NO_MINOR_CUT | NO_HALLUCINATION | NO_INFECT | EMP_PAIN | EMP_BRUTE_DMG | EMP_CONFUSE //NO_PAIN
 	appearance_flags = HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_HAIR_COLOR | HAS_UNDERWEAR | HAS_LIPS
-	spawn_flags		 = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
+	spawn_flags		 = SPECIES_CAN_JOIN //| SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
 
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
 	has_organ = list(
-		O_BRAIN = /mob/living/carbon/brain/gi88y_core //Replace with Gibby's mask
-		O_EYES = /obj/item/organ/gi88y_eyes// Code for half robotic eye. Not here.
+		O_BRAIN = /mob/living/carbon/brain/gi88y_core, //Replace with Gibby's mask
+		O_EYES = /obj/item/organ/eyes/gi88y // Code for half robotic eye. Not here.
 		)
 	has_limbs = list(
 		BP_TORSO =  list("path" = /obj/item/organ/external/chest/unbreakable/gi88y),
@@ -147,8 +148,13 @@
 
 	var/monochromatic = FALSE //IGNORE ME
 
+	/*
 	evasion = 5
 	accuracy = 35
+	pulse = PULSE_NONE
+	does_not_breathe = TRUE
+	*/
+	// ^ this is for living/carbon, not datum/species. Gibby brain is a living/carbon
 
 /datum/species/gi88y/New()
 	..()
@@ -171,22 +177,32 @@
 	..()
 	H.synth_color = TRUE
 
-/datum/species/protean/equip_survival_gear(var/mob/living/carbon/human/H)
+/datum/species/protean/gi88y/equip_survival_gear(var/mob/living/carbon/human/H)
 	var/obj/item/stack/nanopaste/nanopaste = new(null,4)
 	var/obj/item/stack/material/steel/metal_stack = new(null, 3) //Replace with goop
+
+	if(H.backbag == 1) //Somewhat misleading, 1 == no bag (not boolean)
+		H.equip_to_slot_or_del(nanopaste, slot_l_hand)
+		H.equip_to_slot_or_del(metal_stack, slot_r_hand)
+	else
+		H.equip_to_slot_or_del(nanopaste, slot_in_backpack)
+		H.equip_to_slot_or_del(metal_stack, slot_in_backpack)
 
 	spawn(0) //Let their real nif load if they have one
 		if(!H) //Human could have been deleted in this amount of time. Observing does this, mannequins, etc.
 			return
 		if(!H.nif)
-			var/obj/item/device/nif/gi88y/new_nif = new()
+			var/obj/item/device/nif/bioadap/new_nif = new()
 			new_nif.quick_implant(H)
 		else
 			H.nif.durability = 25
 
+/*
+/datum/modifier/goop
 
 
-/datum/gi88y/goop/tick()
+
+/datum/modifier/goop/tick()
 	var/mob/living/carbon/human/H
 	for(var/obj/item/organ/O as anything in H.internal_organs)
 		// Fix internal damage
@@ -195,19 +211,41 @@
 		// If not damaged, but dead, fix it
 		else if(O.status & ORGAN_DEAD)
 			O.status &= ~ORGAN_DEAD //Unset dead if we repaired it entirely
+*/
 
 // organs
 /mob/living/carbon/brain/gi88y_core
 	icon = 'icons/obj/surgery.dmi' //icons
 	icon_state = "brain1"
 
-/mob/living/carbon/brain/gi88y_core/initialize()
+/mob/living/carbon/brain/gi88y_core/Initialize()
 	. = ..()
+	var/datum/reagents/R = new/datum/reagents(1000)
 	reagents = null
 	R.my_atom = src
 	default_language = GLOB.all_languages[LANGUAGE_GALCOM]
 
-/obj/item/organ/gi88y/eyes
+/obj/item/organ/eyes/gi88y
+	/obj/item/organ/internal/eyes
+	name = "eyeballs"
+	icon_state = "eyes"
+	gender = PLURAL
+	organ_tag = O_EYES
+	parent_organ = BP_HEAD
+	var/list/eye_colour = list(0,0,0)
+	var/innate_flash_protection = FLASH_PROTECTION_NONE
+
+/obj/item/organ/internal/eyes/gi88y/robotize()
+	..()
+	name = "optical sensor"
+	//verbs |= /obj/item/organ/internal/eyes/proc/change_eye_color
+
+/obj/item/organ/internal/eyes/gi88y/robot
+	name = "optical sensor"
+
+/obj/item/organ/internal/eyes/gi88y/robot/New()
+	..()
+	robotize()
 
 
 /obj/item/organ/external/chest/unbreakable/gi88y
